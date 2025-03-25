@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong en p5.js</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+  
+  <script>
+    let pala1, pala2, pelota;
+    let velocidadPelotaX = 7;
+    let velocidadPelotaY = 7;
+    let velocidadPala = 10;
+    let puntajeJugador1 = 0;
+    let puntajeJugador2 = 0;
+    let puntajeMaximo = 10;
+    let colorPala1 = [255, 130, 10];
+    let colorPala2 = [50, 70, 255];
+
+    function setup() {
+      createCanvas(800, 600);
+      pala1 = new Pala(50, height / 2 - 50, true, colorPala1);
+      pala2 = new Pala(width - 50 - 15, height / 2 - 50, false, colorPala2);
+      pelota = new Pelota();
+    }
+
+    function draw() {
+      background(0);
+      pala1.mostrar();
+      pala2.mostrar();
+      pala1.mover();
+      pala2.mover();
+      pelota.mostrar();
+      pelota.mover();
+      pelota.colisionConPalas(pala1, pala2);
+      pelota.colisionConParedes();
+      textSize(32);
+      fill(255);
+      textAlign(CENTER, TOP);
+      text(puntajeJugador1, width / 4, 20);
+      text(puntajeJugador2, width * 3 / 4, 20);
+      if (puntajeJugador1 >= puntajeMaximo) {
+        textSize(64);
+        text('¡Jugador 1 gana!', width / 2, height / 2);
+        noLoop();
+      } else if (puntajeJugador2 >= puntajeMaximo) {
+        textSize(64);
+        text('¡Jugador 2 gana!', width / 2, height / 2);
+        noLoop();
+      }
+    }
+
+    class Pala {
+      constructor(x, y, esJugador1, color) {
+        this.x = x;
+        this.y = y;
+        this.ancho = 15;
+        this.alto = 100;
+        this.esJugador1 = esJugador1;
+        this.color = color;
+      }
+
+      mostrar() {
+        fill(this.color);
+        noStroke();
+        rect(this.x, this.y, this.ancho, this.alto);
+      }
+
+      mover() {
+        if (this.esJugador1) {
+          if (keyIsDown(87) && this.y > 0) this.y -= velocidadPala;
+          if (keyIsDown(83) && this.y + this.alto < height) this.y += velocidadPala;
+        } else {
+          if (keyIsDown(UP_ARROW) && this.y > 0) this.y -= velocidadPala;
+          if (keyIsDown(DOWN_ARROW) && this.y + this.alto < height) this.y += velocidadPala;
+        }
+      }
+    }
+
+    class Pelota {
+      constructor() {
+        this.x = width / 2;
+        this.y = height / 2;
+        this.radio = 15;
+        this.velX = random([-1, 1]) * velocidadPelotaX;
+        this.velY = random([-1, 1]) * velocidadPelotaY;
+      }
+
+      mostrar() {
+        fill(255);
+        noStroke();
+        ellipse(this.x, this.y, this.radio * 2, this.radio * 2);
+      }
+
+      mover() {
+        this.x += this.velX;
+        this.y += this.velY;
+      }
+
+      colisionConPalas(pala1, pala2) {
+        if (this.x - this.radio < pala1.x + pala1.ancho && this.x + this.radio > pala1.x &&
+            this.y > pala1.y && this.y < pala1.y + pala1.alto) {
+          this.velX = -this.velX;
+          this.velX *= 1.05;
+          this.velY *= 1.05;
+        }
+
+        if (this.x + this.radio > pala2.x && this.x - this.radio < pala2.x + pala2.ancho &&
+            this.y > pala2.y && this.y < pala2.y + pala2.alto) {
+          this.velX = -this.velX;
+          this.velX *= 1.05;
+          this.velY *= 1.05;
+        }
+      }
+
+      colisionConParedes() {
+        if (this.y - this.radio <= 0 || this.y + this.radio >= height) {
+          this.velY = -this.velY;
+        }
+
+        if (this.x - this.radio <= 0) {
+          puntajeJugador2++;
+          this.reiniciar();
+        } 
+
+        if (this.x + this.radio >= width) {
+          puntajeJugador1++;
+          this.reiniciar();
+        }
+      }
+
+      reiniciar() {
+        this.x = width / 2;
+        this.y = height / 2;
+        this.velX = random([-1, 1]) * velocidadPelotaX;
+        this.velY = random([-1, 1]) * velocidadPelotaY;
+      }
+    }
+  </script>
+</body>
+</html>
